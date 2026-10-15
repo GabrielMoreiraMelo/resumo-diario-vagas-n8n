@@ -55,7 +55,7 @@ Automação que roda sozinha todo dia em um horário agendado: busca vagas remot
    ```powershell
    n8n
    ```
-2. Acesse **http://localhost:5678** e importe o arquivo `workflow/workflow.json` (menu **⋯ → Import**).
+2. Acesse **http://localhost:5678** e importe o arquivo `workflow.json` (menu **⋯ → Import**).
 3. Em **⋯ → Settings → Timezone**, selecione **America/Sao_Paulo** (ou o seu fuso).
 4. Crie as credenciais no n8n:
    - **Telegram API**: token do bot
@@ -68,12 +68,12 @@ Automação que roda sozinha todo dia em um horário agendado: busca vagas remot
 ## Prints
 
 ### Workflow no n8n
-![Workflow no n8n](prints/canvas.png)
+![Workflow no n8n](canvas.png)
 
 ### Resumo recebido no Telegram (execução automática)
-![Mensagem automática](prints/mensagem-automatica.png)
+![Mensagem automática](mensagem-automatica.png)
 
-![Início da mensagem](prints/mensagem-inicio.png)
+![Início da mensagem](mensagem-inicio.png)
 
 ## Relato de problemas enfrentados
 
