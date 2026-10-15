@@ -1,0 +1,281 @@
+{
+  "name": "Resumo Diario Vagas",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 20
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e345058f-3dec-4942-9c90-7c2642d68634",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://remotive.com/api/remote-jobs",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "category",
+              "value": "software-dev"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "55847c04-d565-4798-b436-9596d7e4fae3",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "jobs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "4b5a988b-4dcb-4fbd-a055-36a3cf8b2cf0",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2dbd82f-90b9-4ca0-aff6-6934172f95a8",
+              "name": "titulo",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "16fd4468-b7a9-428b-b9d1-33af67de9849",
+              "name": "empresa",
+              "value": "={{ $json.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "51978f1d-45b1-4b8e-8aba-8ec41f8c89cb",
+              "name": "categoria",
+              "value": "={{ $json.category }}",
+              "type": "string"
+            },
+            {
+              "id": "60c357de-c0ba-4142-b697-89401d62b189",
+              "name": "tipo",
+              "value": "={{ $json.job_type }}",
+              "type": "string"
+            },
+            {
+              "id": "4f9d225c-0d23-4901-85ef-ad5ed5ec81ad",
+              "name": "local",
+              "value": "={{ $json.candidate_required_location }}",
+              "type": "string"
+            },
+            {
+              "id": "ed336e94-5393-4905-82cb-3411465c05f2",
+              "name": "link",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        672,
+        0
+      ],
+      "id": "6cac2e15-1ebe-4a37-bdbf-28feb21181ca",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "vagas",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        0
+      ],
+      "id": "30707f2a-7005-4558-bf5c-b91f49f7f5c9",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.5-flash-lite",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.5-flash-lite"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Você é um assistente que resume vagas de tecnologia para um estudante.\n\nDa lista de vagas em JSON abaixo, escolha NO MÁXIMO 5 vagas da área de tecnologia (desenvolvimento, dados, TI, IA). Ignore vagas de outras áreas (redação, vendas, atendimento etc.).\n\nPara cada vaga escolhida, escreva em português:\n💼 Título – Empresa\n📊 Nível: Júnior, Pleno ou Sênior (deduza pelo título; se não der para saber, escreva \"Não informado\")\n📍 Local | Tipo\n🔗 Link\n\nOrdene das mais acessíveis para iniciantes até as mais exigentes. Marque com ⭐ apenas vagas de tecnologia que sejam júnior ou sem exigência clara de experiência.\nNão use Markdown (sem asteriscos ou sublinhados). No final, escreva: \"Fonte: Remotive (remotive.com)\".\n\nVagas:\n{{ JSON.stringify($json.vagas) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "a36a9b89-a9b3-4c43-a0ea-04fbdaece053",
+      "name": "Message a model",
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7AkfUsQlryD2ZN5h",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "SEU_CHAT_ID",
+        "text": "=📋 Vagas de tecnologia do dia\n\n{{ $json.content.parts[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "546677a8-395c-42bc-b554-8ace9b9b63c1",
+      "name": "Send a text message",
+      "webhookId": "b05ba5a7-3f5b-4b94-a6a9-980ba6b8d9c4",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "telegramApi": {
+          "id": "gCXL75TSuIycBZh8",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "60260944-faa6-4415-bc83-edaa35310adb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18a4699173cd03b5cdeb9eb3fb71aac6f9fad869fe01324db9eb7b59a3200166"
+  },
+  "nodeGroups": [],
+  "id": "3paBzoBjk6VQYIFn",
+  "tags": []
+}
